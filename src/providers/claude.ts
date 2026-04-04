@@ -3,7 +3,7 @@ import type { AIProvider, ProviderResponse } from "../types.js";
 
 export function createClaudeProvider(
   apiKey?: string,
-  model = "claude-sonnet-4-20250514",
+  model = "claude-sonnet-4-6",
 ): AIProvider {
   const key = apiKey ?? process.env["ANTHROPIC_API_KEY"];
   if (!key) throw new Error("ANTHROPIC_API_KEY is not set.");
