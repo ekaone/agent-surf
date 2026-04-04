@@ -1,5 +1,5 @@
 import type { CatalogSchema } from "../types.js";
-import { CORE_CATALOG } from "./index.js";
+import { CORE_CATALOG } from "./core-catalog.js";
 
 // ---------------------------------------------------------------------------
 // Extensible registry — core + user extensions

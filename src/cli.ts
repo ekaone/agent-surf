@@ -73,14 +73,18 @@ function parseArgs(argv: string[]): CliArgs {
         result.provider = args[++i] as ProviderName;
         break;
       case "--browser-provider":
-      case "-p":
-        result.browserProvider = args[++i];
+      case "-p": {
+        const val = args[++i];
+        if (val) result.browserProvider = val;
         break;
-      case "--session":
-        result.session = args[++i];
+      }
+      case "--session": {
+        const val = args[++i];
+        if (val) result.session = val;
         break;
+      }
       default:
-        if (!arg.startsWith("-") && !result.goal) {
+        if (arg && !arg.startsWith("-") && !result.goal) {
           result.goal = arg;
         }
     }
@@ -202,8 +206,8 @@ async function main() {
   const runnerOpts: RunnerOptions = {
     dryRun: args.dryRun,
     debug: args.debug,
-    session: args.session,
-    provider: args.browserProvider,
+    ...(args.session && { session: args.session }),
+    ...(args.browserProvider && { provider: args.browserProvider }),
     headed: args.headed,
   };
 

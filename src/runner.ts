@@ -158,7 +158,12 @@ function parseRefs(output: string): Record<string, string> {
   const pattern = /(@e\d+)\s+\[([^\]]+)\]\s+"?([^"\n]+)"?/g;
   let match;
   while ((match = pattern.exec(output)) !== null) {
-    refs[match[1]] = `${match[2]}: ${match[3].trim()}`;
+    const key = match[1];
+    const type = match[2];
+    const content = match[3]?.trim();
+    if (key && type && content) {
+      refs[key] = `${type}: ${content}`;
+    }
   }
   return refs;
 }
@@ -224,10 +229,14 @@ export async function runPlan(
       }
 
       if (!success) {
+        const firstStep = segment.steps[0];
+        if (!firstStep) {
+          return { success: false, steps: results };
+        }
         return {
           success: false,
           steps: results,
-          failedAt: segment.steps[0].id,
+          failedAt: firstStep.id,
         };
       }
 

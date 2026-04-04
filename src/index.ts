@@ -38,9 +38,9 @@ export { runPlan, formatPlan } from "./runner.js";
 
 // Providers
 export {
-  ClaudeProvider,
-  OpenAIProvider,
-  OllamaProvider,
+  createClaudeProvider,
+  createOpenAIProvider,
+  createOllamaProvider,
   createProvider,
 } from "./providers/index.js";
 

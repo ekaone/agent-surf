@@ -1,6 +1,8 @@
-export { createClaudeProvider } from "./claude.js";
-export { createOpenAIProvider } from "./openai.js";
-export { createOllamaProvider } from "./ollama.js";
+import { createClaudeProvider } from "./claude.js";
+import { createOpenAIProvider } from "./openai.js";
+import { createOllamaProvider } from "./ollama.js";
+
+export { createClaudeProvider, createOpenAIProvider, createOllamaProvider };
 
 export type ProviderName = "claude" | "openai" | "ollama";
 

@@ -66,12 +66,16 @@ export function validateStep(
   const argEntries = Object.entries(schema.args ?? {});
   for (let i = 0; i < step.args.length; i++) {
     const argSchema = argEntries[i]?.[1];
+    const argValue = step.args[i];
     if (argSchema?.type === "enum" && argSchema.values) {
-      if (!argSchema.values.includes(step.args[i])) {
-        return {
-          valid: false,
-          reason: `Arg "${argEntries[i][0]}" for command "${step.command}" must be one of: ${argSchema.values.join(", ")}. Got: "${step.args[i]}"`,
-        };
+      if (argValue && !argSchema.values.includes(argValue)) {
+        const argName = argEntries[i]?.[0];
+        if (argName) {
+          return {
+            valid: false,
+            reason: `Arg "${argName}" for command "${step.command}" must be one of: ${argSchema.values.join(", ")}. Got: "${argValue}"`,
+          };
+        }
       }
     }
   }
