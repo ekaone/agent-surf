@@ -98,11 +98,11 @@ function parseArgs(argv: string[]): CliArgs {
 // ---------------------------------------------------------------------------
 
 const HELP = `
-  browse-ai — AI-powered browser automation CLI
+  agent-surf — AI-powered browser automation CLI
 
   Usage
-    browse-ai "<your goal>" [options]
-    ba "<your goal>" [options]
+    agent-surf "<your goal>" [options]
+    as "<your goal>" [options]
 
   Options
     --provider <n>            AI provider: claude | openai | ollama  (default: claude)
@@ -116,20 +116,20 @@ const HELP = `
     --version, -v             Show version
 
   Examples
-    ba "open github.com and take a screenshot"
-    ba "go to example.com, find the search box, type hello, press enter"
-    ba "open localhost:3000, scroll down, take a full page screenshot"
-    ba "open example.com and screenshot" --dry-run
-    ba "open example.com and screenshot" --provider openai
-    ba "open example.com" -p browseruse
-    ba "open example.com" --headed --yes
+    as "open github.com and take a screenshot"
+    as "go to example.com, find the search box, type hello, press enter"
+    as "open localhost:3000, scroll down, take a full page screenshot"
+    as "open example.com and screenshot" --dry-run
+    as "open example.com and screenshot" --provider openai
+    as "open example.com" -p browseruse
+    as "open example.com" --headed --yes
 
   Environment
     ANTHROPIC_API_KEY       Required for Claude (default provider)
     OPENAI_API_KEY          Required for OpenAI
     BROWSER_USE_API_KEY     Required for Browser Use cloud execution
 
-  Docs: https://github.com/ekaone/browse-ai
+  Docs: https://github.com/ekaone/agent-surf
 `;
 
 // ---------------------------------------------------------------------------
@@ -141,8 +141,10 @@ async function checkAgentBrowser(): Promise<boolean> {
     const { execa } = await import("execa");
     const result = await execa("agent-browser", ["--version"], {
       reject: false,
+      stdin: "ignore",
       stdout: "pipe",
       stderr: "pipe",
+      windowsHide: process.platform === "win32",
     });
     return result.exitCode === 0;
   } catch {
@@ -167,27 +169,29 @@ async function main() {
     process.exit(args.help ? 0 : 1);
   }
 
-  // ── Intro ────────────────────────────────────────────────────────────────
-  intro("browse-ai");
+  // ── Intro ───
+  intro("agent-surf");
 
-  // ── Preflight check ───────────────────────────────────────────────────────
+  // ── Preflight check ───
   const agentBrowserOk = await checkAgentBrowser();
   if (!agentBrowserOk) {
     log.error("agent-browser is not installed.");
     log.info("Install it with: npm install -g agent-browser");
+    await new Promise((r) => setTimeout(r, 100));
     process.exit(1);
   }
 
-  // ── Build AI provider ─────────────────────────────────────────────────────
+  // ── Build AI provider ───
   let provider;
   try {
     provider = createProvider(args.provider);
   } catch (err) {
     log.error(err instanceof Error ? err.message : String(err));
+    await new Promise((r) => setTimeout(r, 100));
     process.exit(1);
   }
 
-  // ── Generate plan ─────────────────────────────────────────────────────────
+  // ── Generate plan ───
   const s = spinner();
   s.start(`Generating plan  [${args.provider}]`);
 
@@ -199,10 +203,11 @@ async function main() {
   } catch (err) {
     s.stop("Plan generation failed");
     log.error(err instanceof Error ? err.message : String(err));
+    await new Promise((r) => setTimeout(r, 100));
     process.exit(1);
   }
 
-  // ── Runner options ────────────────────────────────────────────────────────
+  // ── Runner options ───
   const runnerOpts: RunnerOptions = {
     dryRun: args.dryRun,
     debug: args.debug,
@@ -211,39 +216,42 @@ async function main() {
     headed: args.headed,
   };
 
-  // ── Display plan ──────────────────────────────────────────────────────────
+  // ── Display plan ───
   note(formatPlan(plan, runnerOpts), `Plan  (${plan.steps.length} steps)`);
 
   if (args.dryRun) {
     outro("Dry run complete. No commands were executed.");
+    await new Promise((r) => setTimeout(r, 100));
     process.exit(0);
   }
 
-  // ── Confirm ───────────────────────────────────────────────────────────────
+  // ── Confirm ───
   if (!args.yes) {
     const ok = await confirm({ message: "Proceed?" });
 
     if (isCancel(ok) || !ok) {
       cancel("Cancelled.");
-      process.exit(0);
+      return;
     }
   }
 
-  // ── Execute ───────────────────────────────────────────────────────────────
+  // ── Execute ───
   log.step("Executing...");
 
   const result = await runPlan(plan, runnerOpts);
 
   if (result.success) {
     outro(`Done — all ${result.steps.length} steps completed.`);
+    await new Promise((r) => setTimeout(r, 100));
     process.exit(0);
   } else {
     log.error(`Failed at step ${result.failedAt}. Execution stopped.`);
+    await new Promise((r) => setTimeout(r, 100));
     process.exit(1);
   }
 }
 
 main().catch((err) => {
   log.error(`Unexpected error: ${err instanceof Error ? err.message : err}`);
-  process.exit(1);
+  process.exitCode = 1;
 });

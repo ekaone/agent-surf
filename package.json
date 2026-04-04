@@ -37,6 +37,10 @@
     "README.md",
     "LICENSE"
   ],
+  "bin": {
+    "agent-surf": "./dist/cli.js",
+    "as": "./dist/cli.js"
+},
   "scripts": {
     "build": "pnpm typecheck && pnpm clean && tsup",
     "dev": "tsup --watch",

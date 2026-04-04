@@ -7,6 +7,13 @@ import type {
   StepResult,
 } from "./types.js";
 
+// Avoid waiting on stdin; hide extra console flicker on Windows. Safe no-op fields on macOS/Linux.
+const SUBPROCESS_BASE = {
+  reject: false as const,
+  stdin: "ignore" as const,
+  windowsHide: process.platform === "win32",
+};
+
 // ---------------------------------------------------------------------------
 // Command builder — converts a Step into argv for execa
 // ---------------------------------------------------------------------------
@@ -73,7 +80,11 @@ function buildSegments(steps: Step[]): Segment[] {
 }
 
 // ---------------------------------------------------------------------------
-// Execute a chain segment — steps joined with && via execa shell
+// Execute a chain segment — one agent-browser process per step (no shell &&)
+//
+// A single shell with `cmd1 && cmd2 && cmd3` often leaves stdio/process handles
+// open on Windows (Git Bash / cmd), so Node never resolves and the CLI hangs.
+// Sequential argv-based exec is equivalent for automation and exits reliably.
 // ---------------------------------------------------------------------------
 
 async function execChain(
@@ -81,33 +92,38 @@ async function execChain(
   opts: RunnerOptions,
   debug: boolean,
 ): Promise<{ output: string; exitCode: number }> {
-  const chain = steps
-    .map((s) => ["agent-browser", ...buildArgv(s, opts)].join(" "))
-    .join(" && ");
-
-  if (debug) {
-    console.log(`  $ ${chain}`);
-  }
+  let combinedOutput = "";
 
   try {
-    const proc = execa(chain, {
-      shell: true,
-      stdout: "pipe",
-      stderr: "pipe",
-      reject: false,
-    });
+    for (const step of steps) {
+      const argv = buildArgv(step, opts);
+      if (debug) {
+        console.log(`  $ agent-browser ${argv.join(" ")}`);
+      }
 
-    proc.stdout?.on("data", (chunk: Buffer) => process.stdout.write(chunk));
-    proc.stderr?.on("data", (chunk: Buffer) => process.stderr.write(chunk));
+      const proc = execa("agent-browser", argv, {
+        ...SUBPROCESS_BASE,
+        stdout: "pipe",
+        stderr: "pipe",
+      });
 
-    const result = await proc;
-    return {
-      output: (result.stdout ?? "") + (result.stderr ?? ""),
-      exitCode: result.exitCode ?? 1,
-    };
+      proc.stdout?.on("data", (chunk: Buffer) => process.stdout.write(chunk));
+      proc.stderr?.on("data", (chunk: Buffer) => process.stderr.write(chunk));
+
+      const result = await proc;
+      combinedOutput += (result.stdout ?? "") + (result.stderr ?? "");
+      const code = result.exitCode ?? 1;
+      if (code !== 0) {
+        return { output: combinedOutput, exitCode: code };
+      }
+    }
+
+    return { output: combinedOutput, exitCode: 0 };
   } catch (err) {
     return {
-      output: err instanceof Error ? err.message : String(err),
+      output:
+        combinedOutput +
+        (err instanceof Error ? err.message : String(err)),
       exitCode: 1,
     };
   }
@@ -127,9 +143,9 @@ async function execRead(
 
   try {
     const proc = execa("agent-browser", argv, {
+      ...SUBPROCESS_BASE,
       stdout: "pipe",
       stderr: "pipe",
-      reject: false,
     });
 
     proc.stdout?.on("data", (chunk: Buffer) => process.stdout.write(chunk));
