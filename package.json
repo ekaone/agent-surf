@@ -1,6 +1,6 @@
 {
   "name": "@ekaone/agent-surf",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "AI-powered browser automation CLI. Write your goal in plain English, AI generates a validated agent-browser command plan, and the runner executes it step by step",
   "keywords": [
     "browser",
