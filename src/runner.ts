@@ -122,8 +122,7 @@ async function execChain(
   } catch (err) {
     return {
       output:
-        combinedOutput +
-        (err instanceof Error ? err.message : String(err)),
+        combinedOutput + (err instanceof Error ? err.message : String(err)),
       exitCode: 1,
     };
   }
@@ -211,7 +210,7 @@ export async function runPlan(
   }
 
   for (const segment of segments) {
-    // ── Chain segment ──────────────────────────────────────────────────────
+    // ── Chain segment ──
     if (segment.kind === "chain") {
       if (dryRun) {
         for (const step of segment.steps) {
@@ -256,7 +255,7 @@ export async function runPlan(
         };
       }
 
-      // ── Read segment ───────────────────────────────────────────────────────
+      // ── Read segment ──
     } else {
       const { step } = segment;
 

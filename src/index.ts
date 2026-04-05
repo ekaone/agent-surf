@@ -1,6 +1,10 @@
-// ---------------------------------------------------------------------------
-// @ekaone/browse-ai — public API
-// ---------------------------------------------------------------------------
+/**
+ * @file index.ts
+ * @description Core entry point for @ekaone/agent-surf.
+ * @author Eka Prasetia
+ * @website https://prasetia.me
+ * @license MIT
+ */
 
 // Catalog — core commands + extension API
 export {

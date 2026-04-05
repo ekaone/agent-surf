@@ -9,6 +9,7 @@ import {
   log,
   isCancel,
 } from "@clack/prompts";
+import { createRequire } from "module";
 import { generatePlan } from "./planner.js";
 import { createProvider } from "./providers/index.js";
 import { formatPlan, runPlan } from "./runner.js";
@@ -30,6 +31,12 @@ interface CliArgs {
   headed: boolean;
   help: boolean;
   version: boolean;
+}
+
+function getVersion(): string {
+  const require = createRequire(import.meta.url);
+  const { version, name } = require("../package.json");
+  return `${name}@${version}`;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -160,7 +167,7 @@ async function main() {
   const args = parseArgs(process.argv);
 
   if (args.version) {
-    console.log("0.1.0");
+    console.log(getVersion());
     process.exit(0);
   }
 

@@ -1,7 +1,7 @@
 {
   "name": "@ekaone/agent-surf",
   "version": "0.0.1",
-  "description": "An AI agent library for browser",
+  "description": "AI-powered browser automation CLI. Write your goal in plain English, AI generates a validated agent-browser command plan, and the runner executes it step by step",
   "keywords": [
     "browser",
     "agent",
@@ -16,6 +16,7 @@
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "module",
   "engines": {
     "node": ">=18"
   },
@@ -40,7 +41,7 @@
   "bin": {
     "agent-surf": "./dist/cli.js",
     "as": "./dist/cli.js"
-},
+  },
   "scripts": {
     "build": "pnpm typecheck && pnpm clean && tsup",
     "dev": "tsup --watch",
