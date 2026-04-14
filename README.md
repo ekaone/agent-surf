@@ -1,13 +1,13 @@
 # @ekaone/agent-surf
 
-AI-powered browser automation CLI. Write your goal in plain English, AI generates a validated `agent-browser` command plan, and the runner executes it step by step.
+AI-powered browser automation CLI. Write in plain English, AI generates a validated `agent-browser` command plan, and the runner executes it step by step.
 
 > Before using `agent-surf`, please install [agent-browser](https://agent-browser.dev/installation) first
 
 # Quick Start
 
 ```bash
-as "open github.com, search for agent-surf, take a screenshot"
+as "open github.com, search for agent-surf, take a screenshot" --yes
 ```
 
 ```
